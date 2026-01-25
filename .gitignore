@@ -1,0 +1,81 @@
+# Compiled class files
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Output directory
+/out/
+target/ # For Maven/Gradle projects
+
+# IntelliJ IDEA project files
+.idea/
+# Except for some shared project settings (optional, depends on team preference)
+!.idea/*.iml
+!.idea/misc.xml
+!.idea/vcs.xml
+!.idea/modules.xml
+
+# IntelliJ IDEA workspace file
+*.iml
+*.ipr
+*.iws
+
+# Annotation processing output
+/generated/
+/bin/
+
+# Maven-specific files
+target/
+pom.xml.tag
+pom.xml.next
+pom.xml.bak
+pom.xml.versions
+pom.xml.releaseBackup
+# Maven temporary files
+release.properties
+dependency-reduced-pom.xml
+buildnumber.properties
+.mvn/timing.properties
+# Maven cache
+.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+
+# Gradle-specific files
+.gradle/
+/build/
+# Gradle cache
+.gradle-task
+# Gradle build script temporary files
+build.log
+# Gradle project-specific settings
+gradle/wrapper/gradle-wrapper.jar
+# Gradle metadata files
+.gradle/
+# Gradle logs
+build.gradle.kts.orig
+
+# Eclipse-specific files (if multi-IDE environment)
+.classpath
+.project
+.settings/
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log files
+*.log
+log/
+temp/
+
