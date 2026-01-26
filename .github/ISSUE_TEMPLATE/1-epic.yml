@@ -1,0 +1,44 @@
+name: Epic
+description: Large theme or goal that spans multiple stories/tasks (DDD bounded context, major feature set, etc.)
+title: "EPIC - <short descriptive title>"
+labels: ["epic", "p1-high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Epics group related stories. Use task lists below to link children.
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal / Business Value
+      description: High-level "As a … I want … so that …" or plain explanation.
+      value: "As a [role], I want [capability], so that [benefit]."
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope (In / Out)
+      description: What is included? What is explicitly deferred?
+
+  - type: textarea
+    id: children
+    attributes:
+      label: Child Stories / Tasks
+      description: Link issues here (GitHub auto-tracks progress %).
+      value: |
+        ### Planned
+        - [ ]
+
+        ### Completed
+    validations:
+      required: false
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Dependencies / Risks / Open Questions
+      description: Blockers, invariants to protect, spikes needed?
+

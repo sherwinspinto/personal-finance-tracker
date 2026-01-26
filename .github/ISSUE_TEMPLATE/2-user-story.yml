@@ -1,0 +1,49 @@
+name: User Story
+description: Small, valuable, testable increment from user perspective
+title: "STORY - <capability>"
+labels: ["user-story", "feature"]
+body:
+  - type: textarea
+    id: story
+    attributes:
+      label: User Story
+      description: Classic format – keep it focused.
+      value: "As a [type of user/role], I want [some goal/capability] so that [benefit/value]."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context / Motivation
+      description: Why now? Link to epic, problem it solves, domain concept.
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: Verifiable outcomes. Use Gherkin (Given/When/Then) for clarity.
+      value: |
+        - Given [context], When [action], Then [outcome]
+        - ...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: considerations
+    attributes:
+      label: Key Non-Functional / DDD Aspects (check what applies)
+      options:
+        - label: Domain invariants protected
+        - label: Concurrency / race conditions considered
+        - label: Error handling & rollback
+        - label: Performance / load implications
+        - label: Tests (unit / integration / contract)
+        - label: Hexagonal boundary respected (domain pure)
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Technical Notes / Ideas
+      description: Optional – ports needed? Aggregate? Value objects?
+

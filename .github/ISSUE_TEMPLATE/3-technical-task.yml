@@ -1,0 +1,26 @@
+name: Technical Task / Spike
+description: Non-user-facing work (refactor, research, config, etc.)
+title: "TASK - <short description>"
+labels: ["task", "tech-debt"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description & Goal
+      description: What needs doing? Why?
+    validations:
+      required: true
+
+  - type: textarea
+    id: dod
+    attributes:
+      label: Definition of Done
+      description: How do we know it's finished?
+      value: |
+        - [ ] Code complete & reviewed
+        - [ ] Tests added/updated
+        - [ ] No regressions
+        - [ ] Documentation updated (README, ADR, etc.)
+    validations:
+      required: true
+
