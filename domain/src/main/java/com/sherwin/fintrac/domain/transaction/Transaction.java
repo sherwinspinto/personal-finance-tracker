@@ -11,7 +11,12 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 public record Transaction(
-        TransactionId id, Text text, Money amount, CreatedAt createdAt, Type type) {
+        TransactionId id,
+        Text description,
+        Money amount,
+        CreatedAt createdAt,
+        Type type,
+        AccountId accountId) {
     private static final int DESCRIPTION_DEFAULT_MAX_LENGTH = 255;
 
     public enum Type {
@@ -44,13 +49,15 @@ public record Transaction(
             Long amount,
             String currencyCode,
             LocalDateTime createdAt,
-            String type) {
+            String type,
+            UUID accountId) {
         var idCreationResult = TransactionId.of(transactionId);
         var descriptionCreationResult =
                 Text.of(description, FieldName.of("description"), DESCRIPTION_DEFAULT_MAX_LENGTH);
         var initialBalanceCreationResult = Money.of(amount, currencyCode, FieldName.of("amount"));
         var createdAtCreationResult = CreatedAt.of(createdAt, FieldName.of("createdAt"));
         var typeCreationResult = Type.of(type);
+        var accountIdCreationResult = AccountId.of(accountId);
 
         List<FieldError> validationErrors =
                 Stream.of(
@@ -58,7 +65,8 @@ public record Transaction(
                                 descriptionCreationResult,
                                 initialBalanceCreationResult,
                                 createdAtCreationResult,
-                                typeCreationResult)
+                                typeCreationResult,
+                                accountIdCreationResult)
                         .filter(CreationResult::failure)
                         .map(CreationResult::getValidationErrors)
                         .flatMap(List::stream)
@@ -73,14 +81,17 @@ public record Transaction(
                 && initialBalanceCreationResult
                         instanceof Success<Money>(Money resultInitialBalance)
                 && createdAtCreationResult instanceof Success<CreatedAt>(CreatedAt resultCreatedAt)
-                && typeCreationResult instanceof Success<Type>(Type resultType)) {
+                && typeCreationResult instanceof Success<Type>(Type resultType)
+                && accountIdCreationResult
+                        instanceof Success<AccountId>(AccountId resultAccountId)) {
             return CreationResult.success(
                     new Transaction(
                             resultId,
                             resultDescription,
                             resultInitialBalance,
                             resultCreatedAt,
-                            resultType));
+                            resultType,
+                            resultAccountId));
         }
         throw new IllegalStateException("Unexpected result");
     }

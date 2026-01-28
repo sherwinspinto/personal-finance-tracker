@@ -4,9 +4,9 @@ import java.util.Objects;
 
 public interface ValidationParams {
 
-    record FieldValue<T>(T fieldValue) implements ValidationParams {
+    record FieldValue<T>(T value) implements ValidationParams {
         public FieldValue {
-            Objects.requireNonNull(fieldValue, "Field value cannot be null");
+            Objects.requireNonNull(value, "Field value cannot be null");
         }
 
         public static <T> FieldValue<T> of(T fieldValue) {
