@@ -1,0 +1,87 @@
+package com.sherwin.fintrac.domain.transaction;
+
+import com.sherwin.fintrac.domain.common.model.*;
+import com.sherwin.fintrac.domain.common.model.CreationResult.Failure;
+import com.sherwin.fintrac.domain.common.model.CreationResult.Success;
+import com.sherwin.fintrac.domain.common.model.FieldError.InvalidValue;
+import com.sherwin.fintrac.domain.common.model.ValidationParams.FieldValue;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+public record Transaction(
+        TransactionId id, Text text, Money amount, CreatedAt createdAt, Type type) {
+    private static final int DESCRIPTION_DEFAULT_MAX_LENGTH = 255;
+
+    public enum Type {
+        CREDIT("CREDIT"),
+        DEBIT("DEBIT");
+        private final String value;
+        private static final FieldName fieldName = FieldName.of("type");
+
+        Type(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public static CreationResult<Type> of(String value) {
+            try {
+                Type type = Type.valueOf(value);
+                return CreationResult.success(type);
+            } catch (IllegalArgumentException e) {
+                return new Failure<>(List.of(InvalidValue.of(fieldName, FieldValue.of(value))));
+            }
+        }
+    }
+
+    public static CreationResult<Transaction> of(
+            UUID transactionId,
+            String description,
+            Long amount,
+            String currencyCode,
+            LocalDateTime createdAt,
+            String type) {
+        var idCreationResult = TransactionId.of(transactionId);
+        var descriptionCreationResult =
+                Text.of(description, FieldName.of("description"), DESCRIPTION_DEFAULT_MAX_LENGTH);
+        var initialBalanceCreationResult = Money.of(amount, currencyCode, FieldName.of("amount"));
+        var createdAtCreationResult = CreatedAt.of(createdAt, FieldName.of("createdAt"));
+        var typeCreationResult = Type.of(type);
+
+        List<FieldError> validationErrors =
+                Stream.of(
+                                idCreationResult,
+                                descriptionCreationResult,
+                                initialBalanceCreationResult,
+                                createdAtCreationResult,
+                                typeCreationResult)
+                        .filter(CreationResult::failure)
+                        .map(CreationResult::getValidationErrors)
+                        .flatMap(List::stream)
+                        .toList();
+
+        if (!validationErrors.isEmpty()) {
+            return CreationResult.failure(validationErrors);
+        }
+
+        if (idCreationResult instanceof Success<TransactionId>(TransactionId resultId)
+                && descriptionCreationResult instanceof Success<Text>(Text resultDescription)
+                && initialBalanceCreationResult
+                        instanceof Success<Money>(Money resultInitialBalance)
+                && createdAtCreationResult instanceof Success<CreatedAt>(CreatedAt resultCreatedAt)
+                && typeCreationResult instanceof Success<Type>(Type resultType)) {
+            return CreationResult.success(
+                    new Transaction(
+                            resultId,
+                            resultDescription,
+                            resultInitialBalance,
+                            resultCreatedAt,
+                            resultType));
+        }
+        throw new IllegalStateException("Unexpected result");
+    }
+}
