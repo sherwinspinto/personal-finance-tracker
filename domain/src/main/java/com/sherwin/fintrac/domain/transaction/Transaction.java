@@ -1,5 +1,6 @@
 package com.sherwin.fintrac.domain.transaction;
 
+import com.sherwin.fintrac.domain.common.Validations;
 import com.sherwin.fintrac.domain.common.model.*;
 import com.sherwin.fintrac.domain.common.model.CreationResult.Failure;
 import com.sherwin.fintrac.domain.common.model.CreationResult.Success;
@@ -34,6 +35,9 @@ public record Transaction(
         }
 
         public static CreationResult<Type> of(String value) {
+            if (Validations.isNullOrEmpty(value)) {
+                return new Failure<>(List.of(InvalidValue.of(fieldName, FieldValue.of(value))));
+            }
             try {
                 Type type = Type.valueOf(value);
                 return CreationResult.success(type);
@@ -54,7 +58,7 @@ public record Transaction(
         var idCreationResult = TransactionId.of(transactionId);
         var descriptionCreationResult =
                 Text.of(description, FieldName.of("description"), DESCRIPTION_DEFAULT_MAX_LENGTH);
-        var initialBalanceCreationResult = Money.of(amount, currencyCode, FieldName.of("amount"));
+        var amountCreationResult = Money.of(amount, currencyCode, FieldName.of("amount"));
         var createdAtCreationResult = CreatedAt.of(createdAt, FieldName.of("createdAt"));
         var typeCreationResult = Type.of(type);
         var accountIdCreationResult = AccountId.of(accountId);
@@ -63,7 +67,7 @@ public record Transaction(
                 Stream.of(
                                 idCreationResult,
                                 descriptionCreationResult,
-                                initialBalanceCreationResult,
+                                amountCreationResult,
                                 createdAtCreationResult,
                                 typeCreationResult,
                                 accountIdCreationResult)
@@ -78,8 +82,7 @@ public record Transaction(
 
         if (idCreationResult instanceof Success<TransactionId>(TransactionId resultId)
                 && descriptionCreationResult instanceof Success<Text>(Text resultDescription)
-                && initialBalanceCreationResult
-                        instanceof Success<Money>(Money resultInitialBalance)
+                && amountCreationResult instanceof Success<Money>(Money resultAmount)
                 && createdAtCreationResult instanceof Success<CreatedAt>(CreatedAt resultCreatedAt)
                 && typeCreationResult instanceof Success<Type>(Type resultType)
                 && accountIdCreationResult
@@ -88,7 +91,7 @@ public record Transaction(
                     new Transaction(
                             resultId,
                             resultDescription,
-                            resultInitialBalance,
+                            resultAmount,
                             resultCreatedAt,
                             resultType,
                             resultAccountId));

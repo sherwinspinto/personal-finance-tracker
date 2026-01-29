@@ -7,7 +7,7 @@ import com.sherwin.fintrac.application.useCase.model.PostTransactionUseCaseRespo
 import com.sherwin.fintrac.domain.common.model.CreationResult;
 import com.sherwin.fintrac.domain.common.model.FieldError;
 import com.sherwin.fintrac.domain.common.model.FieldName;
-import com.sherwin.fintrac.domain.outbound.TransactionRepository;
+import com.sherwin.fintrac.domain.outbound.TransactionRepositoryPort;
 import com.sherwin.fintrac.domain.transaction.Transaction;
 import java.time.Clock;
 import java.util.UUID;
@@ -71,8 +71,8 @@ class PostTransactionUseCaseServiceTest {
                 createTransactionRepository(), Clock.systemUTC(), () -> transactionId);
     }
 
-    static TransactionRepository createTransactionRepository() {
-        return new TransactionRepository() {
+    static TransactionRepositoryPort createTransactionRepository() {
+        return new TransactionRepositoryPort() {
             @Override
             public Transaction addTransaction(Transaction transaction) {
                 return transaction;

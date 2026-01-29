@@ -7,7 +7,7 @@ import com.sherwin.fintrac.application.useCase.model.PostTransactionUseCaseRespo
 import com.sherwin.fintrac.domain.common.model.CreationResult;
 import com.sherwin.fintrac.domain.common.model.CreationResult.Success;
 import com.sherwin.fintrac.domain.common.model.FieldError;
-import com.sherwin.fintrac.domain.outbound.TransactionRepository;
+import com.sherwin.fintrac.domain.outbound.TransactionRepositoryPort;
 import com.sherwin.fintrac.domain.transaction.Transaction;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -16,13 +16,15 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 public class PostTransactionUseCaseService implements PostTransactionUseCase {
-    private final TransactionRepository transactionRepository;
+    private final TransactionRepositoryPort transactionRepositoryPort;
     private final Clock clock;
     private final Supplier<UUID> uuidSupplier;
 
     public PostTransactionUseCaseService(
-            TransactionRepository transactionRepository, Clock clock, Supplier<UUID> uuidSupplier) {
-        this.transactionRepository = transactionRepository;
+            TransactionRepositoryPort transactionRepositoryPort,
+            Clock clock,
+            Supplier<UUID> uuidSupplier) {
+        this.transactionRepositoryPort = transactionRepositoryPort;
         this.clock = clock;
         this.uuidSupplier = uuidSupplier;
     }
@@ -52,7 +54,7 @@ public class PostTransactionUseCaseService implements PostTransactionUseCase {
     }
 
     private PostTransactionUseCaseResponse handleCreation(Transaction transaction) {
-        Transaction createdTransaction = transactionRepository.addTransaction(transaction);
+        Transaction createdTransaction = transactionRepositoryPort.addTransaction(transaction);
         return PostTransactionUseCaseResponse.fromDomain(createdTransaction);
     }
 }
