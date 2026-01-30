@@ -54,7 +54,7 @@ public record Transaction(
             String currencyCode,
             LocalDateTime createdAt,
             String type,
-            UUID accountId) {
+            String accountId) {
         var idCreationResult = TransactionId.of(transactionId);
         var descriptionCreationResult =
                 Text.of(description, FieldName.of("description"), DESCRIPTION_DEFAULT_MAX_LENGTH);

@@ -1,22 +1,24 @@
 package com.sherwin.fintrac.application.useCase.model;
 
 import com.sherwin.fintrac.domain.transaction.Transaction;
-import java.util.UUID;
+import java.time.LocalDateTime;
 
 public record PostTransactionUseCaseResponse(
-        UUID accountId,
-        UUID transactionId,
+        String accountId,
+        String transactionId,
         long amount,
-        String currency,
+        String currencyCode,
         String description,
-        String type) {
+        String type,
+        LocalDateTime createdAt) {
     public static PostTransactionUseCaseResponse fromDomain(Transaction transaction) {
         return new PostTransactionUseCaseResponse(
-                transaction.accountId().value(),
-                transaction.id().value(),
+                transaction.accountId().value().toString(),
+                transaction.id().value().toString(),
                 transaction.amount().value(),
-                transaction.amount().currencyCode().getSymbol(),
+                transaction.amount().currencyCode().getCurrencyCode(),
                 transaction.description().value(),
-                transaction.type().name());
+                transaction.type().name(),
+                transaction.createdAt().value());
     }
 }

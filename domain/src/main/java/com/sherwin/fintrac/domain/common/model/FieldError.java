@@ -4,7 +4,7 @@ import static com.sherwin.fintrac.domain.common.model.ValidationParams.*;
 
 import java.util.Objects;
 
-public interface FieldError {
+public sealed interface FieldError {
     int errorCode();
 
     String errorMessage();
@@ -69,7 +69,7 @@ public interface FieldError {
         }
     }
 
-    interface FieldErrorWithParams extends FieldError {
+    sealed interface FieldErrorWithParams extends FieldError {
         record GreaterThanMaxError<T>(
                 FieldName fieldName, FieldValue<T> fieldValue, Param<T> maxValue)
                 implements FieldErrorWithParams {

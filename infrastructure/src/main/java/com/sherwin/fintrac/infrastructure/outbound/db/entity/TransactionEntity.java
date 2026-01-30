@@ -58,7 +58,7 @@ public class TransactionEntity {
                         transactionEntity.getCurrency(),
                         transactionEntity.getCreatedAt(),
                         transactionEntity.getType(),
-                        transactionEntity.getAccountId());
+                        transactionEntity.getAccountId().toString());
         return transactionCreationResult.get();
     }
 

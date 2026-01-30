@@ -36,7 +36,7 @@ class TransactionRepositoryServiceTest {
                         "USD",
                         createdAt,
                         "CREDIT",
-                        accountId);
+                        accountId.toString());
         TransactionEntity transactionEntity =
                 TransactionEntity.fromDomain(transactionCreationResult.get());
         when(transactionRepository.save(any(TransactionEntity.class)))
@@ -62,7 +62,7 @@ class TransactionRepositoryServiceTest {
                         "USD",
                         createdAt,
                         "CREDIT",
-                        accountId);
+                        accountId.toString());
 
         TransactionEntity badTransactionEntity =
                 new TransactionEntity(transactionId, accountId, null, null, null, null, null);

@@ -21,7 +21,8 @@ class PostTransactionUseCaseServiceTest {
         PostTransactionUseCase useCase = createUseCase(transactionId);
         assertNotNull(useCase);
         PostTransactionCommand command =
-                new PostTransactionCommand(accountId, 100L, "USD", "CREDIT", "Test description");
+                new PostTransactionCommand(
+                        accountId.toString(), 100L, "USD", "CREDIT", "Test description");
         CreationResult<PostTransactionUseCaseResponse> result = useCase.execute(command);
         assertNotNull(result);
         switch (result) {
@@ -31,7 +32,7 @@ class PostTransactionUseCaseServiceTest {
                 assertEquals(command.amount(), success.amount());
                 assertEquals(command.type(), success.type());
                 assertEquals(command.description(), success.description());
-                assertEquals(transactionId, success.transactionId());
+                assertEquals(transactionId.toString(), success.transactionId());
             }
             case CreationResult.Failure<PostTransactionUseCaseResponse> failure ->
                     fail("Expected success, but got failure: ");
@@ -45,7 +46,8 @@ class PostTransactionUseCaseServiceTest {
         PostTransactionUseCase useCase = createUseCase(transactionId);
         assertNotNull(useCase);
         PostTransactionCommand command =
-                new PostTransactionCommand(accountId, 100L, "US", "CREDIT", "Test description");
+                new PostTransactionCommand(
+                        accountId.toString(), 100L, "US", "CREDIT", "Test description");
         CreationResult<PostTransactionUseCaseResponse> result = useCase.execute(command);
         assertNotNull(result);
         switch (result) {

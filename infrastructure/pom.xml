@@ -23,6 +23,11 @@
       <artifactId>domain</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.sherwin.fintrac</groupId>
+      <artifactId>application</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- External Dependencies -->
     <dependency>
@@ -30,8 +35,8 @@
       <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
     <!-- Testing Dependencies -->
