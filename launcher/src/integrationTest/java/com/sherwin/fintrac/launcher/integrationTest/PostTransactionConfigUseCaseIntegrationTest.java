@@ -1,8 +1,8 @@
 package com.sherwin.fintrac.launcher.integrationTest;
 
-import com.sherwin.fintrac.application.useCase.PostTransactionUseCase;
-import com.sherwin.fintrac.application.useCase.model.PostTransactionCommand;
-import com.sherwin.fintrac.application.useCase.model.PostTransactionUseCaseResponse;
+import com.sherwin.fintrac.application.useCase.transaction.PostTransactionUseCase;
+import com.sherwin.fintrac.application.useCase.transaction.model.PostTransactionCommand;
+import com.sherwin.fintrac.application.useCase.transaction.model.PostTransactionUseCaseResponse;
 import com.sherwin.fintrac.domain.common.model.CreationResult;
 import com.sherwin.fintrac.launcher.config.CommonConfig;
 import com.sherwin.fintrac.launcher.config.TransactionConfig;

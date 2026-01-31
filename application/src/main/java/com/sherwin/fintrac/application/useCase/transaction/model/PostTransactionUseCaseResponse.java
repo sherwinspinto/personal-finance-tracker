@@ -1,4 +1,4 @@
-package com.sherwin.fintrac.application.useCase.model;
+package com.sherwin.fintrac.application.useCase.transaction.model;
 
 import com.sherwin.fintrac.domain.transaction.Transaction;
 import java.time.LocalDateTime;

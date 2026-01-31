@@ -2,8 +2,10 @@ package com.sherwin.fintrac.application.useCase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.sherwin.fintrac.application.useCase.model.PostTransactionCommand;
-import com.sherwin.fintrac.application.useCase.model.PostTransactionUseCaseResponse;
+import com.sherwin.fintrac.application.useCase.transaction.PostTransactionUseCase;
+import com.sherwin.fintrac.application.useCase.transaction.PostTransactionUseCaseService;
+import com.sherwin.fintrac.application.useCase.transaction.model.PostTransactionCommand;
+import com.sherwin.fintrac.application.useCase.transaction.model.PostTransactionUseCaseResponse;
 import com.sherwin.fintrac.domain.common.model.CreationResult;
 import com.sherwin.fintrac.domain.common.model.FieldError;
 import com.sherwin.fintrac.domain.common.model.FieldName;

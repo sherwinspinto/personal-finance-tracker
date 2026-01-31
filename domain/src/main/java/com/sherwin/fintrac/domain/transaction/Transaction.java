@@ -1,5 +1,6 @@
 package com.sherwin.fintrac.domain.transaction;
 
+import com.sherwin.fintrac.domain.common.Utils;
 import com.sherwin.fintrac.domain.common.Validations;
 import com.sherwin.fintrac.domain.common.model.*;
 import com.sherwin.fintrac.domain.common.model.CreationResult.Failure;
@@ -8,8 +9,8 @@ import com.sherwin.fintrac.domain.common.model.FieldError.InvalidValue;
 import com.sherwin.fintrac.domain.common.model.ValidationParams.FieldValue;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 public record Transaction(
         TransactionId id,
@@ -63,23 +64,37 @@ public record Transaction(
         var typeCreationResult = Type.of(type);
         var accountIdCreationResult = AccountId.of(accountId);
 
-        List<FieldError> validationErrors =
-                Stream.of(
+        Optional<List<FieldError>> validationErrors =
+                Utils.getListOfValidationErrorsFromListOfCreationResults(
+                        List.of(
                                 idCreationResult,
                                 descriptionCreationResult,
                                 amountCreationResult,
                                 createdAtCreationResult,
                                 typeCreationResult,
-                                accountIdCreationResult)
-                        .filter(CreationResult::failure)
-                        .map(CreationResult::getValidationErrors)
-                        .flatMap(List::stream)
-                        .toList();
+                                accountIdCreationResult));
 
-        if (!validationErrors.isEmpty()) {
-            return CreationResult.failure(validationErrors);
+        if (validationErrors.isPresent()) {
+            return CreationResult.failure(validationErrors.get());
         }
 
+        return combine(
+                        idCreationResult,
+                        descriptionCreationResult,
+                        amountCreationResult,
+                        createdAtCreationResult,
+                        typeCreationResult,
+                        accountIdCreationResult)
+                .orElseThrow(() -> new IllegalStateException("Unexpected result"));
+    }
+
+    static Optional<Success<Transaction>> combine(
+            CreationResult<TransactionId> idCreationResult,
+            CreationResult<Text> descriptionCreationResult,
+            CreationResult<Money> amountCreationResult,
+            CreationResult<CreatedAt> createdAtCreationResult,
+            CreationResult<Type> typeCreationResult,
+            CreationResult<AccountId> accountIdCreationResult) {
         if (idCreationResult instanceof Success<TransactionId>(TransactionId resultId)
                 && descriptionCreationResult instanceof Success<Text>(Text resultDescription)
                 && amountCreationResult instanceof Success<Money>(Money resultAmount)
@@ -87,15 +102,16 @@ public record Transaction(
                 && typeCreationResult instanceof Success<Type>(Type resultType)
                 && accountIdCreationResult
                         instanceof Success<AccountId>(AccountId resultAccountId)) {
-            return CreationResult.success(
-                    new Transaction(
-                            resultId,
-                            resultDescription,
-                            resultAmount,
-                            resultCreatedAt,
-                            resultType,
-                            resultAccountId));
+            return Optional.of(
+                    CreationResult.success(
+                            new Transaction(
+                                    resultId,
+                                    resultDescription,
+                                    resultAmount,
+                                    resultCreatedAt,
+                                    resultType,
+                                    resultAccountId)));
         }
-        throw new IllegalStateException("Unexpected result");
+        return Optional.empty();
     }
 }

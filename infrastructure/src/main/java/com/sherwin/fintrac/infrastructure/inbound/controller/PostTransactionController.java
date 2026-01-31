@@ -1,16 +1,17 @@
 package com.sherwin.fintrac.infrastructure.inbound.controller;
 
-import com.sherwin.fintrac.application.useCase.PostTransactionUseCase;
-import com.sherwin.fintrac.application.useCase.model.PostTransactionUseCaseResponse;
+import static com.sherwin.fintrac.infrastructure.inbound.controller.PostTransactionController.TRANSACTIONS_BASE_PATH;
+
+import com.sherwin.fintrac.application.useCase.transaction.PostTransactionUseCase;
+import com.sherwin.fintrac.application.useCase.transaction.model.PostTransactionUseCaseResponse;
 import com.sherwin.fintrac.domain.common.model.CreationResult;
 import com.sherwin.fintrac.domain.common.model.FieldError;
-import com.sherwin.fintrac.infrastructure.inbound.common.dto.Error;
+import com.sherwin.fintrac.infrastructure.inbound.common.Constants;
+import com.sherwin.fintrac.infrastructure.inbound.common.Utils;
 import com.sherwin.fintrac.infrastructure.inbound.model.PostTransactionRequest;
 import com.sherwin.fintrac.infrastructure.inbound.model.PostTransactionResponse;
 import java.net.URI;
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/transactions")
+@RequestMapping(Constants.BASE_PATH + TRANSACTIONS_BASE_PATH)
 public class PostTransactionController {
-    public static final String PATH = "/api/transactions";
+    public static final String TRANSACTIONS_BASE_PATH = "/transactions";
     private final PostTransactionUseCase postTransactionUseCase;
 
     @Autowired
@@ -37,24 +38,15 @@ public class PostTransactionController {
                 postTransactionUseCase.execute(request.toCommand());
         return switch (creationResult) {
             case CreationResult.Success(PostTransactionUseCaseResponse response) ->
-                    handleSuccess(response);
+                    ResponseEntity.created(
+                                    URI.create(
+                                            TRANSACTIONS_BASE_PATH
+                                                    + "/"
+                                                    + response.transactionId()))
+                            .body(PostTransactionResponse.fromUseCase(response));
             case CreationResult.Failure<PostTransactionUseCaseResponse>(
                             List<FieldError> validationErrors) ->
-                    handleFailure(validationErrors);
+                    Utils.handleFailure(validationErrors);
         };
-    }
-
-    private ResponseEntity<?> handleSuccess(PostTransactionUseCaseResponse response) {
-        return ResponseEntity.created(URI.create(PATH + "/" + response.transactionId()))
-                .body(PostTransactionResponse.fromUseCase(response));
-    }
-
-    private ResponseEntity<?> handleFailure(List<FieldError> errors) {
-        return Optional.ofNullable(errors)
-                .map(Collection::stream)
-                .map(fieldErrorStream -> fieldErrorStream.map(Error::fromDomain).toList())
-                .map(responseErrors -> ResponseEntity.badRequest().body(responseErrors))
-                .orElseThrow(
-                        () -> new IllegalArgumentException("Invalid state in error processing"));
     }
 }

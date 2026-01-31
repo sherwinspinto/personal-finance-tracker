@@ -18,6 +18,8 @@ public record AccountId(UUID value) {
     }
 
     public static CreationResult<AccountId> of(String value) {
+        if (Validations.isNullOrEmpty(value))
+            return CreationResult.failure(List.of(new FieldError.EmptyStringError(FIELD_NAME)));
         Optional<UUID> uuid = Validations.convertToUUID(value);
         if (uuid.isPresent()) return CreationResult.success(new AccountId(uuid.get()));
         return CreationResult.failure(
