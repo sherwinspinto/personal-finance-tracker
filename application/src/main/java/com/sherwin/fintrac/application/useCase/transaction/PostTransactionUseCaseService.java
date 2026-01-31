@@ -1,9 +1,9 @@
-package com.sherwin.fintrac.application.useCase;
+package com.sherwin.fintrac.application.useCase.transaction;
 
 import static com.sherwin.fintrac.domain.common.model.CreationResult.*;
 
-import com.sherwin.fintrac.application.useCase.model.PostTransactionCommand;
-import com.sherwin.fintrac.application.useCase.model.PostTransactionUseCaseResponse;
+import com.sherwin.fintrac.application.useCase.transaction.model.PostTransactionCommand;
+import com.sherwin.fintrac.application.useCase.transaction.model.PostTransactionUseCaseResponse;
 import com.sherwin.fintrac.domain.common.model.CreationResult;
 import com.sherwin.fintrac.domain.common.model.CreationResult.Success;
 import com.sherwin.fintrac.domain.common.model.FieldError;

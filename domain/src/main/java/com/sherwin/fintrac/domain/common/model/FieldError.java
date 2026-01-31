@@ -49,6 +49,26 @@ public sealed interface FieldError {
         }
     }
 
+    record ConflictError(FieldName fieldName) implements FieldError {
+        public ConflictError {
+            Objects.requireNonNull(fieldName, "Field name cannot be null");
+        }
+
+        public static ConflictError of(FieldName fieldName) {
+            return new ConflictError(fieldName);
+        }
+
+        @Override
+        public int errorCode() {
+            return -105;
+        }
+
+        @Override
+        public String errorMessage() {
+            return "CONFLICT";
+        }
+    }
+
     record InvalidValue<T>(FieldName fieldName, FieldValue<T> fieldValue) implements FieldError {
         public InvalidValue {
             Objects.requireNonNull(fieldName, "Field name cannot be null");

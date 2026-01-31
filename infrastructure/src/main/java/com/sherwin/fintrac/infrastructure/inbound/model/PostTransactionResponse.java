@@ -1,6 +1,6 @@
 package com.sherwin.fintrac.infrastructure.inbound.model;
 
-import com.sherwin.fintrac.application.useCase.model.PostTransactionUseCaseResponse;
+import com.sherwin.fintrac.application.useCase.transaction.model.PostTransactionUseCaseResponse;
 import com.sherwin.fintrac.infrastructure.inbound.common.dto.MoneyDto;
 import java.time.LocalDateTime;
 
@@ -25,8 +25,8 @@ public record PostTransactionResponse(
     public static PostTransactionResponse fromUseCase(
             PostTransactionUseCaseResponse useCaseResponse) {
         return new PostTransactionResponse(
-                useCaseResponse.transactionId().toString(),
-                useCaseResponse.accountId().toString(),
+                useCaseResponse.transactionId(),
+                useCaseResponse.accountId(),
                 useCaseResponse.type(),
                 useCaseResponse.description(),
                 MoneyDto.of(useCaseResponse.amount(), useCaseResponse.currencyCode()),

@@ -1,6 +1,6 @@
 package com.sherwin.fintrac.infrastructure.inbound.model;
 
-import com.sherwin.fintrac.application.useCase.model.PostTransactionCommand;
+import com.sherwin.fintrac.application.useCase.transaction.model.PostTransactionCommand;
 import com.sherwin.fintrac.infrastructure.inbound.common.dto.MoneyDto;
 
 public record PostTransactionRequest(

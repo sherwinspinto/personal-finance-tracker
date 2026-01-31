@@ -1,7 +1,7 @@
 package com.sherwin.fintrac.launcher.config;
 
-import com.sherwin.fintrac.application.useCase.PostTransactionUseCase;
-import com.sherwin.fintrac.application.useCase.PostTransactionUseCaseService;
+import com.sherwin.fintrac.application.useCase.transaction.PostTransactionUseCase;
+import com.sherwin.fintrac.application.useCase.transaction.PostTransactionUseCaseService;
 import com.sherwin.fintrac.domain.outbound.TransactionRepositoryPort;
 import java.time.Clock;
 import java.util.UUID;
