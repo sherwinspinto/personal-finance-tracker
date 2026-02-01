@@ -1,9 +1,11 @@
 package com.sherwin.fintrac.infrastructure.outbound.db.repository;
 
 import com.sherwin.fintrac.domain.account.Account;
+import com.sherwin.fintrac.domain.common.model.AccountId;
 import com.sherwin.fintrac.domain.common.model.Email;
 import com.sherwin.fintrac.domain.outbound.AccountRepositoryPort;
 import com.sherwin.fintrac.infrastructure.outbound.db.entity.AccountEntity;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,5 +24,10 @@ public class AccountRepositoryService implements AccountRepositoryPort {
     @Override
     public boolean exists(Email email) {
         return accountRepository.existsByEmail(email.value());
+    }
+
+    @Override
+    public Optional<Account> findById(AccountId accountId) {
+        return accountRepository.findById(accountId.value()).map(AccountEntity::toDomain);
     }
 }

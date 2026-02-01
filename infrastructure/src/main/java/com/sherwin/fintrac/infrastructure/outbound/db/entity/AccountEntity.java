@@ -3,11 +3,12 @@ package com.sherwin.fintrac.infrastructure.outbound.db.entity;
 import com.sherwin.fintrac.domain.account.Account;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "accounts")
 public class AccountEntity {
-    @Id private String id;
+    @Id private UUID id;
 
     @Column(unique = true)
     private String email;
@@ -21,7 +22,7 @@ public class AccountEntity {
 
     public AccountEntity(
             String id, String email, Long balance, String currencyCode, LocalDateTime createdAt) {
-        this.id = id;
+        this.id = UUID.fromString(id);
         this.email = email;
         this.initialBalance = balance;
         this.currencyCode = currencyCode;
@@ -38,10 +39,10 @@ public class AccountEntity {
     }
 
     public Account toDomain() {
-        return Account.of(id, email, initialBalance, currencyCode, createdAt).get();
+        return Account.of(id.toString(), email, initialBalance, currencyCode, createdAt).get();
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 

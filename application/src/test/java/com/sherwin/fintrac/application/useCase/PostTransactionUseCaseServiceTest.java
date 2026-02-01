@@ -2,16 +2,22 @@ package com.sherwin.fintrac.application.useCase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.sherwin.fintrac.application.useCase.account.FetchAccountUseCase;
+import com.sherwin.fintrac.application.useCase.account.FetchAccountUseCaseService;
 import com.sherwin.fintrac.application.useCase.transaction.PostTransactionUseCase;
 import com.sherwin.fintrac.application.useCase.transaction.PostTransactionUseCaseService;
 import com.sherwin.fintrac.application.useCase.transaction.model.PostTransactionCommand;
 import com.sherwin.fintrac.application.useCase.transaction.model.PostTransactionUseCaseResponse;
-import com.sherwin.fintrac.domain.common.model.CreationResult;
-import com.sherwin.fintrac.domain.common.model.FieldError;
-import com.sherwin.fintrac.domain.common.model.FieldName;
+import com.sherwin.fintrac.domain.account.Account;
+import com.sherwin.fintrac.domain.common.model.*;
+import com.sherwin.fintrac.domain.outbound.AccountRepositoryPort;
 import com.sherwin.fintrac.domain.outbound.TransactionRepositoryPort;
 import com.sherwin.fintrac.domain.transaction.Transaction;
 import java.time.Clock;
+import java.time.LocalDateTime;
+import java.util.Currency;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +26,13 @@ class PostTransactionUseCaseServiceTest {
     void test_post_transaction_use_case_success() {
         UUID transactionId = UUID.randomUUID();
         UUID accountId = UUID.randomUUID();
-        PostTransactionUseCase useCase = createUseCase(transactionId);
+        Account account =
+                new Account(
+                        new AccountId(accountId),
+                        new Email("test@email.com"),
+                        new Money(1000L, Currency.getInstance("USD")),
+                        new CreatedAt(LocalDateTime.now()));
+        PostTransactionUseCase useCase = createUseCase(transactionId, account, true, account);
         assertNotNull(useCase);
         PostTransactionCommand command =
                 new PostTransactionCommand(
@@ -43,9 +55,16 @@ class PostTransactionUseCaseServiceTest {
 
     @Test
     void test_post_transaction_use_case_failure() {
+
         UUID transactionId = UUID.randomUUID();
         UUID accountId = UUID.randomUUID();
-        PostTransactionUseCase useCase = createUseCase(transactionId);
+        Account account =
+                new Account(
+                        new AccountId(accountId),
+                        new Email("test@email.com"),
+                        new Money(1000L, Currency.getInstance("USD")),
+                        new CreatedAt(LocalDateTime.now()));
+        PostTransactionUseCase useCase = createUseCase(transactionId, account, false, null);
         assertNotNull(useCase);
         PostTransactionCommand command =
                 new PostTransactionCommand(
@@ -70,9 +89,38 @@ class PostTransactionUseCaseServiceTest {
         }
     }
 
-    static PostTransactionUseCase createUseCase(UUID transactionId) {
+    static PostTransactionUseCase createUseCase(
+            UUID transactionId, Account addCount, boolean exists, Account findById) {
         return new PostTransactionUseCaseService(
-                createTransactionRepository(), Clock.systemUTC(), () -> transactionId);
+                createTransactionRepository(),
+                createFetchAccountUseCase(addCount, exists, findById),
+                Clock.systemUTC(),
+                () -> transactionId);
+    }
+
+    static FetchAccountUseCase createFetchAccountUseCase(
+            Account addCount, boolean exists, Account findById) {
+        return new FetchAccountUseCaseService(createAccountRepository(addCount, exists, findById));
+    }
+
+    private static AccountRepositoryPort createAccountRepository(
+            Account addCount, boolean exists, Account findById) {
+        return new AccountRepositoryPort() {
+            @Override
+            public Account addAccount(Account account) {
+                return null;
+            }
+
+            @Override
+            public boolean exists(Email email) {
+                return false;
+            }
+
+            @Override
+            public Optional<Account> findById(AccountId accountId) {
+                return Optional.of(findById);
+            }
+        };
     }
 
     static TransactionRepositoryPort createTransactionRepository() {
@@ -80,6 +128,11 @@ class PostTransactionUseCaseServiceTest {
             @Override
             public Transaction addTransaction(Transaction transaction) {
                 return transaction;
+            }
+
+            @Override
+            public List<Transaction> getAllTransactionsForAccount(AccountId accountId) {
+                return List.of();
             }
         };
     }
