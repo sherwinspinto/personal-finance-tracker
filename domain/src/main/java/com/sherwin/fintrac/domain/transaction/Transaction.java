@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 public record Transaction(
         TransactionId id,
@@ -22,17 +23,24 @@ public record Transaction(
     private static final int DESCRIPTION_DEFAULT_MAX_LENGTH = 255;
 
     public enum Type {
-        CREDIT("CREDIT"),
-        DEBIT("DEBIT");
+        CREDIT("CREDIT", amount -> amount),
+        DEBIT("DEBIT", amount -> -amount);
+
         private final String value;
+        private final Function<Long, Long> signFunction;
         private static final FieldName fieldName = FieldName.of("type");
 
-        Type(String value) {
+        Type(String value, Function<Long, Long> signFunction) {
             this.value = value;
+            this.signFunction = signFunction;
         }
 
         public String getValue() {
             return value;
+        }
+
+        public Function<Long, Long> getSignFunction() {
+            return signFunction;
         }
 
         public static CreationResult<Type> of(String value) {

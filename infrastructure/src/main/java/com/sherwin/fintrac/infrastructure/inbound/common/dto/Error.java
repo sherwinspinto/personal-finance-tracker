@@ -33,13 +33,21 @@ public record Error(int errorCode, String errorMessage, String field, Map<String
                                         greaterThanMaxError.errorCode(),
                                         greaterThanMaxError.errorMessage(),
                                         greaterThanMaxError.fieldName().fieldName(),
-                                        Map.of("maxValue", greaterThanMaxError.maxValue().param()));
+                                        Map.of(
+                                                "value",
+                                                greaterThanMaxError.fieldValue().value(),
+                                                "maxValue",
+                                                greaterThanMaxError.maxValue().param()));
                         case LessThanMinError<?> lessThanMinError ->
                                 new Error(
                                         lessThanMinError.errorCode(),
                                         lessThanMinError.errorMessage(),
                                         lessThanMinError.fieldName().fieldName(),
-                                        Map.of("minValue", lessThanMinError.minValue().param()));
+                                        Map.of(
+                                                "value",
+                                                lessThanMinError.fieldValue().value(),
+                                                "minValue",
+                                                lessThanMinError.minValue().param()));
                     };
             case ConflictError conflictError ->
                     new Error(

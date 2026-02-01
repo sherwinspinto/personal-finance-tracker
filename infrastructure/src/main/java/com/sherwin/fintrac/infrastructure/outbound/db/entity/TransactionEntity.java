@@ -7,7 +7,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "transactions")
+@Table(
+        name = "transactions",
+        indexes = @Index(name = "idx_transactions_account_id", columnList = "account_id"))
 public class TransactionEntity {
     private @Id UUID id;
     private UUID accountId;

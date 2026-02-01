@@ -3,6 +3,7 @@ package com.sherwin.fintrac.domain.account;
 import com.sherwin.fintrac.domain.common.Utils;
 import com.sherwin.fintrac.domain.common.model.*;
 import com.sherwin.fintrac.domain.common.model.CreationResult.Success;
+import com.sherwin.fintrac.domain.transaction.Transaction;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -81,4 +82,19 @@ public record Account(AccountId id, Email email, Money initialBalance, CreatedAt
                                 Money.VALUE.at(parentFieldName.fieldName()),
                                 ValidationParams.FieldValue.of(value)));
             };
+
+    public Long calculateCurrentBalance(List<Transaction> transactions) {
+        return transactions.stream()
+                .map(
+                        transaction ->
+                                transaction
+                                        .type()
+                                        .getSignFunction()
+                                        .apply(transaction.amount().value()))
+                .reduce(initialBalance.value(), Long::sum);
+    }
+
+    public boolean isBalanceNegative(Long currentBalance) {
+        return currentBalance < 0;
+    }
 }

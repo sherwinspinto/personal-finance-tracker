@@ -5,12 +5,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.sherwin.fintrac.application.useCase.account.model.RegisterAccountCommandUseCaseOutput;
 import com.sherwin.fintrac.application.useCase.account.model.RegisterAccountUseCaseCommand;
 import com.sherwin.fintrac.domain.account.Account;
+import com.sherwin.fintrac.domain.common.model.AccountId;
 import com.sherwin.fintrac.domain.common.model.CreationResult;
 import com.sherwin.fintrac.domain.common.model.Email;
 import com.sherwin.fintrac.domain.common.model.FieldError;
 import com.sherwin.fintrac.domain.outbound.AccountRepositoryPort;
 import java.time.Clock;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
@@ -55,6 +57,11 @@ class RegisterAccountUseCaseServiceTest {
             @Override
             public boolean exists(Email email) {
                 return accountExists;
+            }
+
+            @Override
+            public Optional<Account> findById(AccountId accountId) {
+                return Optional.empty();
             }
         };
     }

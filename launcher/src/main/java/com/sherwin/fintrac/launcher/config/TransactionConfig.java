@@ -1,5 +1,6 @@
 package com.sherwin.fintrac.launcher.config;
 
+import com.sherwin.fintrac.application.useCase.account.FetchAccountUseCase;
 import com.sherwin.fintrac.application.useCase.transaction.PostTransactionUseCase;
 import com.sherwin.fintrac.application.useCase.transaction.PostTransactionUseCaseService;
 import com.sherwin.fintrac.domain.outbound.TransactionRepositoryPort;
@@ -14,8 +15,10 @@ public class TransactionConfig {
     @Bean("postTransactionUseCase")
     public PostTransactionUseCase postTransactionUseCase(
             TransactionRepositoryPort transactionRepositoryPort,
+            FetchAccountUseCase fetchAccountUseCase,
             Clock clock,
             Supplier<UUID> uuidSupplier) {
-        return new PostTransactionUseCaseService(transactionRepositoryPort, clock, uuidSupplier);
+        return new PostTransactionUseCaseService(
+                transactionRepositoryPort, fetchAccountUseCase, clock, uuidSupplier);
     }
 }
