@@ -77,29 +77,22 @@ public class PostTransactionUseCaseService implements PostTransactionUseCase {
                                     ValidationParams.FieldValue.of(accountIdString))));
         }
 
-        Long newCurrentBalance =
-                account.get().computeNewBalanceAfterReceivingLatestTransaction(transaction);
+        CreationResult<Void> canApplyTransaction = account.get().canApply(transaction);
 
-        boolean isNegativeBalanceRuleViolated =
-                account.get().doesTransactionViolateNegativeBalanceRule(newCurrentBalance);
+        return switch (canApplyTransaction) {
+            case Success<Void> _ -> {
+                Account updatedAccount = account.get().apply(transaction);
 
-        if (isNegativeBalanceRuleViolated) {
-            return failure(
-                    List.of(
-                            FieldError.FieldErrorWithParams.LessThanMinError.of(
-                                    FieldName.of("currentBalance"),
-                                    ValidationParams.FieldValue.of(newCurrentBalance),
-                                    ValidationParams.Param.of(0L))));
-        } else {
-            Transaction createdTransaction = transactionRepositoryPort.addTransaction(transaction);
-            Long dbUpdatedCurrentBalance =
-                    updateCurrentBalanceUseCase.updateCurrentBalance(
-                            newCurrentBalance,
-                            account.get().currentBalance().currencyCode().getCurrencyCode(),
-                            accountId.value().toString());
-            Account accountWithUpdatedCurrentBalance =
-                    account.get().updateCurrentBalanceAfterTransaction(dbUpdatedCurrentBalance);
-            return new Success<>(PostTransactionUseCaseResponse.fromDomain(createdTransaction));
-        }
+                Transaction createdTransaction =
+                        transactionRepositoryPort.addTransaction(transaction);
+                Long dbUpdatedCurrentBalance =
+                        updateCurrentBalanceUseCase.updateCurrentBalance(
+                                updatedAccount.currentBalance().value(),
+                                account.get().currentBalance().currencyCode().getCurrencyCode(),
+                                accountId.value().toString());
+                yield new Success<>(PostTransactionUseCaseResponse.fromDomain(createdTransaction));
+            }
+            case Failure<Void> (var errors) -> failure(errors);
+        };
     }
 }

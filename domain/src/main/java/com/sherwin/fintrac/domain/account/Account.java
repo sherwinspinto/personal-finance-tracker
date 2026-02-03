@@ -116,17 +116,31 @@ public record Account(
                                 ValidationParams.FieldValue.of(value)));
             };
 
+    public CreationResult<Void> canApply(Transaction transaction) {
+        Long newCurrentBalance = computeNewBalanceAfterReceivingLatestTransaction(transaction);
+        if (newCurrentBalance < 0) {
+            return CreationResult.failure(
+              List.of(
+                FieldError.FieldErrorWithParams.LessThanMinError.of(
+                  FieldName.of("currentBalance"),
+                  ValidationParams.FieldValue.of(newCurrentBalance),
+                  ValidationParams.Param.of(0L))));
+        }
+        return CreationResult.success(null);
+    }
+
+    public Account apply(Transaction transaction) {
+        return withBalance(
+                computeNewBalanceAfterReceivingLatestTransaction(transaction));
+    }
+
     public Long computeNewBalanceAfterReceivingLatestTransaction(Transaction transaction) {
         Function<Long, Long> signFunction = transaction.type().getSignFunction();
         Long transactionAmountWithSign = signFunction.apply(transaction.amount().value());
         return currentBalance.value() + transactionAmountWithSign;
     }
 
-    public boolean doesTransactionViolateNegativeBalanceRule(Long currentBalance) {
-        return currentBalance < 0;
-    }
-
-    public Account updateCurrentBalanceAfterTransaction(Long newCurrentBalance) {
+    Account withBalance(Long newCurrentBalance) {
         return new Account(
                 new AccountId(id.value()),
                 new Email(email().value()),
