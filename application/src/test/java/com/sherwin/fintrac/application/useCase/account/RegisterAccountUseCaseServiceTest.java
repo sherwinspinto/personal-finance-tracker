@@ -5,10 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.sherwin.fintrac.application.useCase.account.model.RegisterAccountCommandUseCaseOutput;
 import com.sherwin.fintrac.application.useCase.account.model.RegisterAccountUseCaseCommand;
 import com.sherwin.fintrac.domain.account.Account;
-import com.sherwin.fintrac.domain.common.model.AccountId;
-import com.sherwin.fintrac.domain.common.model.CreationResult;
-import com.sherwin.fintrac.domain.common.model.Email;
-import com.sherwin.fintrac.domain.common.model.FieldError;
+import com.sherwin.fintrac.domain.common.model.*;
 import com.sherwin.fintrac.domain.outbound.AccountRepositoryPort;
 import java.time.Clock;
 import java.util.List;
@@ -62,6 +59,16 @@ class RegisterAccountUseCaseServiceTest {
             @Override
             public Optional<Account> findById(AccountId accountId) {
                 return Optional.empty();
+            }
+
+            @Override
+            public Optional<Account> fetchWithPessimisticLock(AccountId accountId) {
+                return Optional.empty();
+            }
+
+            @Override
+            public Long updateCurrentBalance(Money newCurrentBalance, AccountId accountId) {
+                return null;
             }
         };
     }

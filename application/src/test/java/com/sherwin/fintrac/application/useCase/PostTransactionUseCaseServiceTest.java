@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.sherwin.fintrac.application.useCase.account.FetchAccountUseCase;
 import com.sherwin.fintrac.application.useCase.account.FetchAccountUseCaseService;
+import com.sherwin.fintrac.application.useCase.account.UpdateCurrentBalanceUseCase;
 import com.sherwin.fintrac.application.useCase.transaction.PostTransactionUseCase;
 import com.sherwin.fintrac.application.useCase.transaction.PostTransactionUseCaseService;
 import com.sherwin.fintrac.application.useCase.transaction.model.PostTransactionCommand;
@@ -30,6 +31,7 @@ class PostTransactionUseCaseServiceTest {
                 new Account(
                         new AccountId(accountId),
                         new Email("test@email.com"),
+                        new Money(1000L, Currency.getInstance("USD")),
                         new Money(1000L, Currency.getInstance("USD")),
                         new CreatedAt(LocalDateTime.now()));
         PostTransactionUseCase useCase = createUseCase(transactionId, account, true, account);
@@ -63,6 +65,7 @@ class PostTransactionUseCaseServiceTest {
                         new AccountId(accountId),
                         new Email("test@email.com"),
                         new Money(1000L, Currency.getInstance("USD")),
+                        new Money(1000L, Currency.getInstance("USD")),
                         new CreatedAt(LocalDateTime.now()));
         PostTransactionUseCase useCase = createUseCase(transactionId, account, false, null);
         assertNotNull(useCase);
@@ -94,8 +97,19 @@ class PostTransactionUseCaseServiceTest {
         return new PostTransactionUseCaseService(
                 createTransactionRepository(),
                 createFetchAccountUseCase(addCount, exists, findById),
+                createUpdateAccountBalanceUseCase(),
                 Clock.systemUTC(),
                 () -> transactionId);
+    }
+
+    private static UpdateCurrentBalanceUseCase createUpdateAccountBalanceUseCase() {
+        return new UpdateCurrentBalanceUseCase() {
+            @Override
+            public Long updateCurrentBalance(
+                    Long newCurrentBalance, String currencyCode, String accountId) {
+                return null;
+            }
+        };
     }
 
     static FetchAccountUseCase createFetchAccountUseCase(
@@ -119,6 +133,16 @@ class PostTransactionUseCaseServiceTest {
             @Override
             public Optional<Account> findById(AccountId accountId) {
                 return Optional.of(findById);
+            }
+
+            @Override
+            public Optional<Account> fetchWithPessimisticLock(AccountId accountId) {
+                return Optional.of(findById);
+            }
+
+            @Override
+            public Long updateCurrentBalance(Money newCurrentBalance, AccountId accountId) {
+                return null;
             }
         };
     }

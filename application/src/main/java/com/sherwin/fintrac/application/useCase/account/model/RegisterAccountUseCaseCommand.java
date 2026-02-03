@@ -12,6 +12,7 @@ public record RegisterAccountUseCaseCommand(
     }
 
     public CreationResult<Account> toDomain(String accountId, LocalDateTime createdAt) {
-        return Account.of(accountId, email, initialBalance, currencyCode, createdAt);
+        return Account.of(
+                accountId, email, initialBalance, currencyCode, initialBalance, createdAt);
     }
 }

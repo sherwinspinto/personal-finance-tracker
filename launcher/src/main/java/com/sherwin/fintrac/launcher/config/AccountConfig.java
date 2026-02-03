@@ -1,9 +1,6 @@
 package com.sherwin.fintrac.launcher.config;
 
-import com.sherwin.fintrac.application.useCase.account.FetchAccountUseCase;
-import com.sherwin.fintrac.application.useCase.account.FetchAccountUseCaseService;
-import com.sherwin.fintrac.application.useCase.account.RegisterAccountUseCase;
-import com.sherwin.fintrac.application.useCase.account.RegisterAccountUseCaseService;
+import com.sherwin.fintrac.application.useCase.account.*;
 import com.sherwin.fintrac.domain.outbound.AccountRepositoryPort;
 import java.time.Clock;
 import java.util.UUID;
@@ -22,5 +19,11 @@ public class AccountConfig {
     @Bean
     public FetchAccountUseCase fetchAccountUseCase(AccountRepositoryPort accountRepository) {
         return new FetchAccountUseCaseService(accountRepository);
+    }
+
+    @Bean
+    public UpdateCurrentBalanceUseCase updateCurrentBalanceUseCase(
+            AccountRepositoryPort accountRepository) {
+        return new UpdateCurrentBalanceUseCaseImpl(accountRepository);
     }
 }

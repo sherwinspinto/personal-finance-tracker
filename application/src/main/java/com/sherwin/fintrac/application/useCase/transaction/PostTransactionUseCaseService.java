@@ -3,6 +3,7 @@ package com.sherwin.fintrac.application.useCase.transaction;
 import static com.sherwin.fintrac.domain.common.model.CreationResult.*;
 
 import com.sherwin.fintrac.application.useCase.account.FetchAccountUseCase;
+import com.sherwin.fintrac.application.useCase.account.UpdateCurrentBalanceUseCase;
 import com.sherwin.fintrac.application.useCase.transaction.model.PostTransactionCommand;
 import com.sherwin.fintrac.application.useCase.transaction.model.PostTransactionUseCaseResponse;
 import com.sherwin.fintrac.domain.account.Account;
@@ -12,7 +13,6 @@ import com.sherwin.fintrac.domain.outbound.TransactionRepositoryPort;
 import com.sherwin.fintrac.domain.transaction.Transaction;
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,16 +21,19 @@ import java.util.function.Supplier;
 public class PostTransactionUseCaseService implements PostTransactionUseCase {
     private final TransactionRepositoryPort transactionRepositoryPort;
     private final FetchAccountUseCase fetchAccountUseCase;
+    private final UpdateCurrentBalanceUseCase updateCurrentBalanceUseCase;
     private final Clock clock;
     private final Supplier<UUID> uuidSupplier;
 
     public PostTransactionUseCaseService(
             TransactionRepositoryPort transactionRepositoryPort,
             FetchAccountUseCase fetchAccountUseCase,
+            UpdateCurrentBalanceUseCase updateCurrentBalanceUseCase,
             Clock clock,
             Supplier<UUID> uuidSupplier) {
         this.transactionRepositoryPort = transactionRepositoryPort;
         this.fetchAccountUseCase = fetchAccountUseCase;
+        this.updateCurrentBalanceUseCase = updateCurrentBalanceUseCase;
         this.clock = clock;
         this.uuidSupplier = uuidSupplier;
     }
@@ -63,7 +66,8 @@ public class PostTransactionUseCaseService implements PostTransactionUseCase {
         String accountIdString = transaction.accountId().value().toString();
         AccountId accountId = transaction.accountId();
 
-        Optional<Account> account = fetchAccountUseCase.fetchAccount(accountIdString);
+        Optional<Account> account =
+                fetchAccountUseCase.fetchAccountUsingPessimisticLock(accountIdString);
 
         if (account.isEmpty()) {
             return failure(
@@ -73,27 +77,29 @@ public class PostTransactionUseCaseService implements PostTransactionUseCase {
                                     ValidationParams.FieldValue.of(accountIdString))));
         }
 
-        List<Transaction> allTransactions =
-                transactionRepositoryPort.getAllTransactionsForAccount(accountId);
-        List<Transaction> allTransactionsPlusCurrent = new ArrayList<>(allTransactions);
-        allTransactionsPlusCurrent.add(transaction);
+        Long newCurrentBalance =
+                account.get().computeNewBalanceAfterReceivingLatestTransaction(transaction);
 
-        Long currentBalance = account.get().calculateCurrentBalance(allTransactionsPlusCurrent);
+        boolean isNegativeBalanceRuleViolated =
+                account.get().doesTransactionViolateNegativeBalanceRule(newCurrentBalance);
 
-        boolean isNegativeBalance = account.get().isBalanceNegative(currentBalance);
-
-        return isNegativeBalance
-                ? failure(
-                        List.of(
-                                FieldError.FieldErrorWithParams.LessThanMinError.of(
-                                        FieldName.of("currentBalance"),
-                                        ValidationParams.FieldValue.of(currentBalance),
-                                        ValidationParams.Param.of(0L))))
-                : success(handleCreation(transaction));
-    }
-
-    PostTransactionUseCaseResponse handleCreation(Transaction transaction) {
-        Transaction createdTransaction = transactionRepositoryPort.addTransaction(transaction);
-        return PostTransactionUseCaseResponse.fromDomain(createdTransaction);
+        if (isNegativeBalanceRuleViolated) {
+            return failure(
+                    List.of(
+                            FieldError.FieldErrorWithParams.LessThanMinError.of(
+                                    FieldName.of("currentBalance"),
+                                    ValidationParams.FieldValue.of(newCurrentBalance),
+                                    ValidationParams.Param.of(0L))));
+        } else {
+            Transaction createdTransaction = transactionRepositoryPort.addTransaction(transaction);
+            Long dbUpdatedCurrentBalance =
+                    updateCurrentBalanceUseCase.updateCurrentBalance(
+                            newCurrentBalance,
+                            account.get().currentBalance().currencyCode().getCurrencyCode(),
+                            accountId.value().toString());
+            Account accountWithUpdatedCurrentBalance =
+                    account.get().updateCurrentBalanceAfterTransaction(dbUpdatedCurrentBalance);
+            return new Success<>(PostTransactionUseCaseResponse.fromDomain(createdTransaction));
+        }
     }
 }

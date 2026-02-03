@@ -11,13 +11,20 @@ class AccountTest {
     @Test
     void test_account_creation() {
         String accountIdString = UUID.randomUUID().toString();
-        Long amount = 2L;
+        Long initialBalanceAmount = 2L;
         String currencyCode = "USD";
+        Long currentBalanceAmount = 2L;
         LocalDateTime createdAt = LocalDateTime.of(2026, 1, 1, 10, 10);
         String email = "test@fintractester.com";
 
         CreationResult<Account> creationResult =
-                Account.of(accountIdString, email, amount, currencyCode, createdAt);
+                Account.of(
+                        accountIdString,
+                        email,
+                        initialBalanceAmount,
+                        currencyCode,
+                        currentBalanceAmount,
+                        createdAt);
         assertInstanceOf(CreationResult.Success.class, creationResult);
     }
 
@@ -26,11 +33,18 @@ class AccountTest {
         String accountIdString = null;
         Long amount = 0L;
         String currencyCode = "INVALID_CURRENCY_CODE";
+        Long currentBalanceAmount = 0L;
         LocalDateTime createdAt = null;
         String email = "testfintractester.com";
 
         CreationResult<Account> creationResult =
-                Account.of(accountIdString, email, amount, currencyCode, createdAt);
+                Account.of(
+                        accountIdString,
+                        email,
+                        amount,
+                        currencyCode,
+                        currentBalanceAmount,
+                        createdAt);
         IO.println(creationResult);
         assertInstanceOf(CreationResult.Failure.class, creationResult);
     }
