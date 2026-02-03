@@ -3,6 +3,7 @@ package com.sherwin.fintrac.infrastructure.outbound.db.repository;
 import com.sherwin.fintrac.domain.account.Account;
 import com.sherwin.fintrac.domain.common.model.AccountId;
 import com.sherwin.fintrac.domain.common.model.Email;
+import com.sherwin.fintrac.domain.common.model.Money;
 import com.sherwin.fintrac.domain.outbound.AccountRepositoryPort;
 import com.sherwin.fintrac.infrastructure.outbound.db.entity.AccountEntity;
 import java.util.Optional;
@@ -29,5 +30,15 @@ public class AccountRepositoryService implements AccountRepositoryPort {
     @Override
     public Optional<Account> findById(AccountId accountId) {
         return accountRepository.findById(accountId.value()).map(AccountEntity::toDomain);
+    }
+
+    @Override
+    public Optional<Account> fetchWithPessimisticLock(AccountId accountId) {
+        return accountRepository.findByIdForUpdate(accountId.value()).map(AccountEntity::toDomain);
+    }
+
+    @Override
+    public Long updateCurrentBalance(Money newCurrentBalance, AccountId accountId) {
+        return accountRepository.updateCurrentBalance(accountId.value(), newCurrentBalance.value());
     }
 }

@@ -18,4 +18,10 @@ public class FetchAccountUseCaseService implements FetchAccountUseCase {
         UUID accountIdUUID = UUID.fromString(accountId);
         return accountRepositoryPort.findById(new AccountId(accountIdUUID));
     }
+
+    @Override
+    public Optional<Account> fetchAccountUsingPessimisticLock(String accountId) {
+        UUID accountIdUUID = UUID.fromString(accountId);
+        return accountRepositoryPort.fetchWithPessimisticLock(new AccountId(accountIdUUID));
+    }
 }

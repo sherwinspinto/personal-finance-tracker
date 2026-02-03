@@ -8,13 +8,20 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
-public record Account(AccountId id, Email email, Money initialBalance, CreatedAt createdAt) {
+public record Account(
+        AccountId id,
+        Email email,
+        Money initialBalance,
+        Money currentBalance,
+        CreatedAt createdAt) {
     public Account {
         Objects.requireNonNull(id, "Account id cannot be null");
         Objects.requireNonNull(email, "Email cannot be null");
         Objects.requireNonNull(createdAt, "Created at cannot be null");
         Objects.requireNonNull(initialBalance, "Initial balance cannot be null");
+        Objects.requireNonNull(currentBalance, "Current balance cannot be null");
     }
 
     public static CreationResult<Account> of(
@@ -22,6 +29,7 @@ public record Account(AccountId id, Email email, Money initialBalance, CreatedAt
             String email,
             Long initialBalance,
             String currencyCode,
+            Long currentBalance,
             LocalDateTime createdAt) {
         var accountIdCreationResult = AccountId.of(id);
         var emailCreationResult = Email.of(email, FieldName.of("email"));
@@ -30,7 +38,13 @@ public record Account(AccountId id, Email email, Money initialBalance, CreatedAt
                         initialBalance,
                         currencyCode,
                         FieldName.of("initialBalance"),
-                        MoneyParamsValidator);
+                        INITIAL_BALANCE_VALIDATOR);
+        var currentBalanceCreationResult =
+                Money.of(
+                        currentBalance,
+                        currencyCode,
+                        FieldName.of("currentBalance"),
+                        CURRENT_BALANCE_VALIDATOR);
         var createdAtCreationResult = CreatedAt.of(createdAt, FieldName.of("createdAt"));
 
         Optional<List<FieldError>> validationErrors =
@@ -39,6 +53,7 @@ public record Account(AccountId id, Email email, Money initialBalance, CreatedAt
                                 accountIdCreationResult,
                                 emailCreationResult,
                                 initialBalanceCreationResult,
+                                currentBalanceCreationResult,
                                 createdAtCreationResult));
 
         if (validationErrors.isPresent()) {
@@ -49,6 +64,7 @@ public record Account(AccountId id, Email email, Money initialBalance, CreatedAt
                         accountIdCreationResult,
                         emailCreationResult,
                         initialBalanceCreationResult,
+                        currentBalanceCreationResult,
                         createdAtCreationResult)
                 .orElseThrow(() -> new IllegalStateException("Unexpected result"));
     }
@@ -57,15 +73,23 @@ public record Account(AccountId id, Email email, Money initialBalance, CreatedAt
             CreationResult<AccountId> accountIdCreationResult,
             CreationResult<Email> emailCreationResult,
             CreationResult<Money> initialBalanceCreationResult,
+            CreationResult<Money> currentBalanceCreationResult,
             CreationResult<CreatedAt> createdAtCreationResult) {
         if (accountIdCreationResult instanceof Success<AccountId>(AccountId resultId)
                 && emailCreationResult instanceof Success<Email>(Email resultEmail)
                 && initialBalanceCreationResult instanceof Success<Money>(Money resultMoney)
+                && currentBalanceCreationResult
+                        instanceof Success<Money>(Money resultCurrentBalance)
                 && createdAtCreationResult
                         instanceof Success<CreatedAt>(CreatedAt resultCreatedAt)) {
             return Optional.of(
                     CreationResult.success(
-                            new Account(resultId, resultEmail, resultMoney, resultCreatedAt)));
+                            new Account(
+                                    resultId,
+                                    resultEmail,
+                                    resultMoney,
+                                    resultCurrentBalance,
+                                    resultCreatedAt)));
         }
         return Optional.empty();
     }
@@ -74,7 +98,7 @@ public record Account(AccountId id, Email email, Money initialBalance, CreatedAt
         return initialBalance != null && initialBalance >= 1;
     }
 
-    static Money.MoneyParamsValidator MoneyParamsValidator =
+    static Money.MoneyParamsValidator INITIAL_BALANCE_VALIDATOR =
             (value, currencyCode, parentFieldName) -> {
                 if (isValidInitialBalance(value)) return List.of();
                 return List.of(
@@ -83,18 +107,31 @@ public record Account(AccountId id, Email email, Money initialBalance, CreatedAt
                                 ValidationParams.FieldValue.of(value)));
             };
 
-    public Long calculateCurrentBalance(List<Transaction> transactions) {
-        return transactions.stream()
-                .map(
-                        transaction ->
-                                transaction
-                                        .type()
-                                        .getSignFunction()
-                                        .apply(transaction.amount().value()))
-                .reduce(initialBalance.value(), Long::sum);
+    static Money.MoneyParamsValidator CURRENT_BALANCE_VALIDATOR =
+            (value, currencyCode, parentFieldName) -> {
+                if (value >= 0) return List.of();
+                return List.of(
+                        FieldError.InvalidValue.of(
+                                Money.VALUE.at(parentFieldName.fieldName()),
+                                ValidationParams.FieldValue.of(value)));
+            };
+
+    public Long computeNewBalanceAfterReceivingLatestTransaction(Transaction transaction) {
+        Function<Long, Long> signFunction = transaction.type().getSignFunction();
+        Long transactionAmountWithSign = signFunction.apply(transaction.amount().value());
+        return currentBalance.value() + transactionAmountWithSign;
     }
 
-    public boolean isBalanceNegative(Long currentBalance) {
+    public boolean doesTransactionViolateNegativeBalanceRule(Long currentBalance) {
         return currentBalance < 0;
+    }
+
+    public Account updateCurrentBalanceAfterTransaction(Long newCurrentBalance) {
+        return new Account(
+                new AccountId(id.value()),
+                new Email(email().value()),
+                new Money(initialBalance().value(), initialBalance.currencyCode()),
+                new Money(newCurrentBalance, initialBalance.currencyCode()),
+                new CreatedAt(createdAt.value()));
     }
 }
